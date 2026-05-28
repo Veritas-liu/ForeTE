@@ -14,6 +14,7 @@ def add_default_args(parser):
     parser.add_argument('--forecast_alpha', type=float, default=0.5, help="Smoothing alpha for exponential forecast")
     parser.add_argument('--forecast_hidden_dim', type=int, default=512, help="Hidden dimension for DNN forecast model")
     parser.add_argument('--forecast_hidden_layers', type=int, default=2, help="Number of hidden layers for DNN forecast model")
+    parser.add_argument('--desensitization_weight', type=float, default=0.0, help="Weight for desensitization term combining log(path_capacity) with lambda")
     parser.add_argument('--model_name', type=str, default = '', help="The custom name added to the end of the model name. Default is emplt")
 
     parser.add_argument('--mode', type=str, default = 'train', help="Mode of operation: train or test, default is train")

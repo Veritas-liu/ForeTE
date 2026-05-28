@@ -78,9 +78,23 @@ class EdgeRAU(nn.Module):
         edge_lambda = F.sigmoid(edge_lambda) # shape: (batch_size, num_edges)
         if self.props.failures is not None and self.props.mode == "test":
             edge_lambda[:, self.props.failures] = 1e9
+        # Prepare desensitization components once outside the loop to reuse
+        desens_weight = getattr(self.props, 'desensitization_weight', 0.0)
+        eps = 1e-8
+        if desens_weight and desens_weight != 0.0:
+            num_pairs = num_paths // num_paths_per_pair
+            min_caps_reshaped = min_capacities.reshape(batch_size, num_pairs, num_paths_per_pair)
+            log_path_cap = torch.log(min_caps_reshaped + eps)
+        else:
+            log_path_cap = None
+
         for i in range(num_for_loops):
             path_sum_lambda = torch.matmul(paths_to_edges, edge_lambda.t()).t().reshape(batch_size, -1, num_paths_per_pair) # shape: (batch_size, num_pairs, num_paths_per_pair)
-            split_ratios = torch.nn.functional.softmin(path_sum_lambda, dim=-1).reshape(batch_size, -1) # shape: (batch_size, num_paths)
+            if desens_weight and desens_weight != 0.0:
+                combined = path_sum_lambda - (desens_weight * log_path_cap)
+                split_ratios = torch.nn.functional.softmin(combined, dim=-1).reshape(batch_size, -1) # shape: (batch_size, num_paths)
+            else:
+                split_ratios = torch.nn.functional.softmin(path_sum_lambda, dim=-1).reshape(batch_size, -1) # shape: (batch_size, num_paths)
             flow_on_paths = tms_pred * split_ratios # shape: (batch_size, num_paths)
             flow_on_edges = torch.matmul(flow_on_paths, paths_to_edges) # shape: (batch_size, num_edges)
             link_util = flow_on_edges / capacities # shape: (batch_size, num_edges)
@@ -109,7 +123,11 @@ class EdgeRAU(nn.Module):
           
         
         path_sum_lambda = torch.matmul(paths_to_edges, edge_lambda.t()).t().reshape(batch_size, -1, num_paths_per_pair) # shape: (batch_size, num_pairs, num_paths_per_pair)
-        split_ratios = torch.nn.functional.softmin(path_sum_lambda, dim=-1).reshape(batch_size, -1)
+        if desens_weight and desens_weight != 0.0:
+            combined = path_sum_lambda - (desens_weight * log_path_cap)
+            split_ratios = torch.nn.functional.softmin(combined, dim=-1).reshape(batch_size, -1)
+        else:
+            split_ratios = torch.nn.functional.softmin(path_sum_lambda, dim=-1).reshape(batch_size, -1)
         flow_on_paths = tms * split_ratios
         flow_on_edges = torch.matmul(flow_on_paths, paths_to_edges)
         link_util = flow_on_edges / capacities
