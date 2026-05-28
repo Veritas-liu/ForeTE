@@ -166,7 +166,7 @@ if props.mode == "train":
 elif props.mode == "test":
     model_name = f"Model_{props.topo_name}_pred_{props.pred}_method_{props.pred_method}_{props.num_paths_per_pair}sp{'_' + props.model_name if props.model_name else ''}.pkl"
     model_path = os.path.join(MODEL_DIR, model_name)
-    model = torch.load(model_path, map_location=device)
+    model = torch.load(model_path, map_location=device, weights_only=False)
     model = model.to(dtype=props.dtype)
     model.eval()
 

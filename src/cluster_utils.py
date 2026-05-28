@@ -54,7 +54,7 @@ class Cluster_Info:
     def get_paths_to_edges_matrix(self, pij: dict) -> torch.sparse_coo_tensor:
         filepath = os.path.join(DATA_DIR, self.props.topo_name, 'P2E', f'{self.props.num_paths_per_pair}_paths_cluster_{self.cluster}.pkl')
         try:
-            paths_to_edges = torch.load(filepath)
+            paths_to_edges = torch.load(filepath, weights_only=False)
         except FileNotFoundError:
             row_indices = []
             col_indices = []
