@@ -1,0 +1,6 @@
+Data/
+Model/
+Result/
+__pycache__/
+src/__pycache__/
+run.sh
