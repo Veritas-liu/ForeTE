@@ -220,11 +220,20 @@ elif props.mode == "test":
     model = model.to(dtype=props.dtype)
     model.eval()
 
-    results_filename = f'{props.model_name}_results.csv' if props.model_name else 'results.csv'
+    parts = []
+    if props.model_name:
+        parts.append(props.model_name)
+    elif props.pred:
+        parts.append(f"DualTE_pred_{props.pred_method}")
+    else:
+        parts.append("DualTE")
+    parts.append(f"forecast_{props.forecast_type}")
+    results_filename = "_".join(parts) + "_results.csv"
+
     if props.failure_num != 0:
         results_filepath = os.path.join(RESULT_DIR, "Test_results", "DualTE", \
                                         props.topo_name, f'{props.num_paths_per_pair}sp', f'{props.test_cluster}',\
-                                            f'failures_{props.failure_num}{results_filename}')
+                                            f'failures_{props.failure_num}_{results_filename}')
     else:
         if props.pred:
             results_filepath = os.path.join(RESULT_DIR, "Test_pred_results", f"DualTE_pred_{props.pred_method}", \
