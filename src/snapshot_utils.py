@@ -15,10 +15,6 @@ class Read_Snapshot:
         self.graph, self.capacities = self.read_graph_from_json(topology_filename)
         self.pairs = self.read_pairs_from_pkl(pairs_filename)
         self.tm = self.read_tm(tm_filename)
-        if props.pred:
-            self.tm_pred = self.read_tm_pred(tm_filename)
-        else:
-            self.tm_pred = self.tm
 
 
     def read_graph_from_json(self, filename):
@@ -51,11 +47,3 @@ class Read_Snapshot:
         assert tm.shape[0] == len(self.pairs) * self.props.num_paths_per_pair
         return tm
     
-    def read_tm_pred(self, filename):
-        tm_pred_file_path = os.path.join(DATA_DIR, self.props.topo_name, 'TMs_pred', self.props.pred_method, filename)
-        with open(tm_pred_file_path, 'rb') as file:
-            tm_pred = pickle.load(file)
-        tm_pred = tm_pred.astype(np.float32)
-        tm_pred = np.repeat(tm_pred, self.props.num_paths_per_pair, axis=0)
-        assert tm_pred.shape[0] == len(self.pairs) * self.props.num_paths_per_pair
-        return tm_pred

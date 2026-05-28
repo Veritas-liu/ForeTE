@@ -42,13 +42,13 @@ class EdgeRAU(nn.Module):
         
 
     
-    def forward(self, capacities, props, tms, tms_pred, pair_tms_hist, paths_to_edges, num_for_loops):
+    def forward(self, capacities, props, tms, tms_pred, tm_hist, paths_to_edges, num_for_loops):
         """
             Args:
                 capacities: torch.Tensor, shape: (batch_size, num_edges)
                 tms: torch.Tensor, shape: (batch_size, num_paths)
                 tms_pred: torch.Tensor, shape: (batch_size, num_paths)
-                pair_tms_hist: torch.Tensor, shape: (batch_size, num_pairs, hist_len)
+                tm_hist: torch.Tensor, shape: (batch_size, hist_len, num_paths)
                 paths_to_edges: torch.Tensor, shape: (num_paths, num_edges)
                 edges_to_paths: torch.Tensor, shape: (num_edges, num_paths)
 

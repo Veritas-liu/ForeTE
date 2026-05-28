@@ -10,10 +10,9 @@ class DM_Dataset_within_Cluster(Dataset):
         self.props = props
         self.cluster = cluster
         self.tm_list = []
-        self.tm_pred_list = []
+        self.tm_hist_list = []
         self.capacity_list = []
         self.opt_list = []
-        self.pair_tm_hist_list = []
 
         if self.props.failure_num == 0:
             opt_file = os.path.join(DATA_DIR, props.topo_name, 'Opt', f'{props.num_paths_per_pair}sp', f'{cluster}', 'opt_values.txt')
@@ -37,16 +36,22 @@ class DM_Dataset_within_Cluster(Dataset):
         catalog = catalog[start:end]
         props.catalog_len = len(catalog)
 
+        tm_history = []
         for idx,(snapshot_filename, opt_value) in enumerate(zip(catalog, opts)):
             topology_filename, pairs_filename, tm_filename = snapshot_filename
             if self.props.failure_num != 0:
-                props.failures=failure_links[idx].tolist()
+                props.failures = failure_links[idx].tolist()
             snapshot = Read_Snapshot(props, topology_filename, pairs_filename, tm_filename)
-            self.tm_list.append(snapshot.tm)
-            self.tm_pred_list.append(snapshot.tm_pred)
-            self.capacity_list.append(snapshot.capacities)
-            self.opt_list.append(opt_value)
-            self.pair_tm_hist_list.append(np.array([0]))
+
+            if len(tm_history) == props.hist_len:
+                self.tm_list.append(snapshot.tm)
+                self.tm_hist_list.append(np.stack(tm_history, axis=0))
+                self.capacity_list.append(snapshot.capacities)
+                self.opt_list.append(opt_value)
+
+            tm_history.append(snapshot.tm)
+            if len(tm_history) > props.hist_len:
+                tm_history.pop(0)
 
         cluster_info = Cluster_Info(props, snapshot, self.cluster)
         self.paths_to_edges = cluster_info.paths_to_edges
@@ -55,4 +60,4 @@ class DM_Dataset_within_Cluster(Dataset):
         return len(self.tm_list)
     
     def __getitem__(self, idx):
-        return self.tm_list[idx], self.tm_pred_list[idx], self.pair_tm_hist_list[idx], self.capacity_list[idx], self.opt_list[idx]
+        return self.tm_list[idx], self.tm_hist_list[idx], self.capacity_list[idx], self.opt_list[idx]
