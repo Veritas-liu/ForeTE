@@ -38,6 +38,16 @@ class TrainableExpSmoothingForecast(nn.Module):
         return tm_pred * bias
 
 
+class MaxHistoryForecast(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+    def forward(self, tm_hist: torch.Tensor) -> torch.Tensor:
+        if tm_hist.ndim != 3:
+            raise ValueError("tm_hist must be a 3D tensor of shape [batch, hist_len, num_paths]")
+        return torch.max(tm_hist, dim=1).values
+
+
 class ForecastNet(nn.Module):
     def __init__(self, forecast_type: str = "exp", hist_len: int = None, tm_shape=None, num_paths: int = None, hidden_dim: int = 512, hidden_layers: int = 2, alpha: float = 0.5):
         super().__init__()
@@ -48,6 +58,8 @@ class ForecastNet(nn.Module):
             if hist_len is None or tm_shape is None:
                 raise ValueError("DNN forecast requires hist_len and tm_shape")
             self.model = TrainableExpSmoothingForecast(hist_len, tm_shape, alpha=alpha)
+        elif forecast_type == "hist_max":
+            self.model = MaxHistoryForecast()
         else:
             raise ValueError(f"Unsupported forecast_type: {forecast_type}")
 

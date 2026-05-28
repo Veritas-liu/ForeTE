@@ -10,7 +10,7 @@ def add_default_args(parser):
     parser.add_argument('--pred', type=int, default = 0, help="Indicates whether to use predicted TMs, default is 0")
     parser.add_argument('--pred_method', type=str, default = 'MovAvg', help="Method for prediction, default is MovAvg")
     parser.add_argument('--hist_len', type=int, default = 12, help="Length of history for prediction, default is 12")
-    parser.add_argument('--forecast_type', type=str, default='exp', choices=['exp', 'dnn'], help="Forecast model type: exp or dnn")
+    parser.add_argument('--forecast_type', type=str, default='exp', choices=['exp', 'dnn', 'hist_max'], help="Forecast model type: exp, dnn, or hist_max")
     parser.add_argument('--forecast_alpha', type=float, default=0.5, help="Smoothing alpha for exponential forecast")
     parser.add_argument('--forecast_hidden_dim', type=int, default=512, help="Hidden dimension for DNN forecast model")
     parser.add_argument('--forecast_hidden_layers', type=int, default=2, help="Number of hidden layers for DNN forecast model")
